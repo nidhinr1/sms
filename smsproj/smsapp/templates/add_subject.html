@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Subject</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom styles to align content with the sidebar */
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        .main-content {
+            margin-left: 250px; /* Same as sidebar width from navbar.html */
+            padding: 20px;
+        }
+        .logout-btn {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+    <div class="main-content">
+    <h2>Add New Subject</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label for="subject_name">Subject Name:</label>
+        <input type="text" id="subject_name" name="subject_name" required><br><br>
+
+        <label for="subject_code">Subject Code:</label>
+        <input type="text" id="subject_code" name="subject_code" required><br><br>
+
+        <label for="semester">Semester:</label>
+        <select id="semester" name="semester" required>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+        </select><br><br>
+        
+        <button type="submit">Add Subject</button>
+    </form>
+
+    {% if success_message %}
+        <p style="color:green;">{{ success_message }}</p>
+    {% endif %}
+
+    {% if error_message %}
+        <p style="color:red;">{{ error_message }}</p>
+    {% endif %}
+</div>
+</body>
+</html>
