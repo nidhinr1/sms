@@ -21,11 +21,14 @@ urlpatterns = [
     path('leave-status/', student_leave_status, name='student_leave_status'),
     path('hostel_fee_details/', hostel_fee_details, name='hostel_fee_details'),
     path('hostel_fee_receipts/', hostel_fee_receipts_view, name='hostel_fee_receipts'),
-    path('add_subject/', add_subject, name='add_subject'),
     path('edit-student/<int:student_id>/', edit_student, name='edit_student'),
     path('course_list', course_list, name='course_list'),
     path('course_list/<str:course_name>/', student_list, name='student_list'),  # Fixed path name
     path('course_list/<str:course_name>/add_mark/<str:student_id>/', add_mark, name='add_mark'),  
     path('view_marks/', view_marks, name='view_marks'),# Ensure this matches the view
+    path('subcourses/', subcourse_list, name='subcourse_list'),
+    path('subcourses/<int:subcourse_id>/add_subject/', add_subject, name='add_subject'),
+    path('usermark/', usermark, name='usermark'),
+
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

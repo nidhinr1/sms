@@ -193,13 +193,29 @@ def view_leave_requests(request):
     leave_requests = LeaveRequest.objects.all()
     return render(request, 'view_leave_requests.html', {'leave_requests': leave_requests})
 
+from django.shortcuts import render
+from .models import StudentDetails, LeaveRequest
+
 def student_leave_status(request):
     try:
-        student = StudentDetails.objects.get(username=request.user)
-        leave_requests = LeaveRequest.objects.filter(student_name=student)
-        return render(request, 'status_leave.html', {'leave_requests': leave_requests})
-    except StudentDetails.DoesNotExist:
-        return render(request, 'status_leave.html', {'error_message': 'Student details not found.'})
+        # Use filter() to get all student details associated with the user
+        student_details = StudentDetails.objects.filter(username=request.user)
+        
+        if student_details.exists():
+            # Get the first StudentDetails entry if multiple exist
+            student = student_details.first()
+
+            # Retrieve leave requests for the selected student
+            leave_requests = LeaveRequest.objects.filter(student_name=student)
+            
+            return render(request, 'status_leave.html', {'leave_requests': leave_requests})
+        else:
+            # Handle case when no student details are found for the user
+            return render(request, 'status_leave.html', {'error_message': 'Student details not found.'})
+    
+    except Exception as e:
+        # Handle any other unexpected exceptions
+        return render(request, 'status_leave.html', {'error_message': f'An error occurred: {str(e)}'})
 
 
 
@@ -277,24 +293,37 @@ def edit_student(request, student_id):
     
     return render(request, 'edit_student.html', {'form': form, 'student': student, 'courses': courses  } )
 
-def add_subject(request):
-    courses = Course.objects.all()  # Fetch all courses for the dropdown
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Course, Subject
+
+def subcourse_list(request):
+    subcourses = Course.objects.all()  # Assuming Course model still stores the subcourse data
+    return render(request, 'subcourse_list.html', {'subcourses': subcourses})
+
+def add_subject(request, subcourse_id):
+    subcourse = get_object_or_404(Course, pk=subcourse_id)
 
     if request.method == 'POST':
-        subject_name = request.POST.get('subject_name')
-        subject_code = request.POST.get('subject_code')
-        semester = request.POST.get('semester')
-        
+        # Retrieve the data from the form
+        subject_names = request.POST.getlist('subject_name')
+        subject_codes = request.POST.getlist('subject_code')
+        semesters = request.POST.getlist('semester')
 
-        try:
-            # Create a new subject instance
-            subject = Subject(subject_name=subject_name, subject_code=subject_code, semester=semester)
-            subject.save()
-            return render(request, 'add_subject.html', {'success_message': 'Subject added successfully!', 'courses': courses})
-        except Exception as e:
-            return render(request, 'add_subject.html', {'error_message': f'Error: {str(e)}', 'courses': courses})
+        # Iterate over the submitted subjects
+        for name, code, semester in zip(subject_names, subject_codes, semesters):
+            if name and code and semester:  # Ensure all fields are filled
+                # Create and save each subject
+                Subject.objects.create(
+                    course_name=subcourse,
+                    subject_name=name,
+                    subject_code=code,
+                    semester=semester
+                )
+        return redirect('subcourse_list')
+    
+    return render(request, 'add_subject.html', {'subcourse': subcourse})
 
-    return render(request, 'add_subject.html', {'courses': courses})
+
 
 from django.shortcuts import render, redirect
 from .models import Course, StudentDetails, Subject, Mark
@@ -329,6 +358,7 @@ def add_mark(request, course_name, student_id):
 
 def view_marks(request):
     marks = None  # Initialize marks variable to hold the results
+    msg = None  # Initialize msg to avoid UnboundLocalError
 
     if request.method == "POST":
         admission_number = request.POST.get('admission_number')
@@ -338,9 +368,57 @@ def view_marks(request):
         try:
             student = StudentDetails.objects.get(admission_number=admission_number)
             marks = Mark.objects.filter(student=student, subject__semester=semester).select_related('subject')
+
+            # Check if all marks are <= 50.0
+            if marks.exists() and all(mark.marks_obtained <= 50.0 for mark in marks):
+                msg = "Failed"
+            else:
+                msg = "Passed"
         except StudentDetails.DoesNotExist:
             marks = []  # No marks if student doesn't exist
+            msg = "Student not found."  # Add an appropriate message for the exception
 
-    return render(request, 'view_marks.html', {'marks': marks})
+    return render(request, 'view_marks.html', {'marks': marks, 'msg': msg})
+
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import StudentDetails, Mark
+
+@login_required
+def usermark(request):
+    student_details = StudentDetails.objects.filter(username=request.user)
+
+    if student_details.exists():
+        # Get the first student record for the user
+        student = student_details.first()
+
+        marks = None
+        selected_semester = None
+        msg = None  # Initialize msg to avoid UnboundLocalError
+        
+        if request.method == 'POST':
+            selected_semester = request.POST.get('semester')
+            # Filter marks for the student by the selected semester
+            marks = Mark.objects.filter(student=student, subject__semester=selected_semester)
+            
+            # Check if all marks are less than or equal to 50.0
+            if marks.exists() and all(mark.marks_obtained <= 50.0 for mark in marks):
+                msg = "Failed"
+            else:
+                msg = "Passed"
+
+        return render(request, 'usermark.html', {
+            'student': student,
+            'marks': marks,
+            'selected_semester': selected_semester,
+            'msg': msg  # msg is now initialized
+        })
+    else:
+        # Handle case when no student details are found for the user
+        return render(request, 'usermark.html', {
+            'error': 'No student details found for this user.'
+        })
+
 
 

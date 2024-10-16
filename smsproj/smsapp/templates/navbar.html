@@ -55,9 +55,10 @@
                 <a href="{% url 'feedback_list' %}">Feedbacks</a>
                 <a href="{% url 'hostel_fee_receipts' %}">Hostel Fee Receipts</a>
                 <a href="{% url 'view_leave_requests' %}">Leave requests</a>
-                <a href="{% url 'add_subject' %}">Add subject</a>
+                <a href="{% url 'subcourse_list' %}">Add subject</a>
                 <a href="{% url 'course_list' %}">Add mark</a>
-                
+                <a href="{% url 'view_marks' %}">View Marks</a>
+
                 
             {% else %}
                 <a href="{% url 'add_student' %}">Add Student Detail</a>
@@ -65,7 +66,8 @@
                 <a href="{% url 'hostel_fee_details' %}">Hostel Fee Details</a>
                 <a href="{% url 'add_leave_request' %}">Add Leave</a>
                 <a href="{% url 'student_leave_status' %}">Leave Status</a>
-                <a href="{% url 'view_marks' %}">View Marks</a>
+                <a href="{% url 'usermark' %}">View Marks</a>
+
             {% endif %}
             <a href="{% url 'logout' %}">Logout</a>
         {% else %}

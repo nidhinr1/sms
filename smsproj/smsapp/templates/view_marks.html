@@ -5,9 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Marks</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        .main-content {
+            margin-left: 250px; /* Same as sidebar width from navbar.html */
+            padding: 20px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-4">
+    <div class="main-content">
+        {% include 'navbar.html' %}
         <h1>View Marks</h1>
         <form method="POST" class="mb-4">
             {% csrf_token %}
@@ -36,6 +47,7 @@
                         <tr>
                             <th>Subject</th>
                             <th>Marks Obtained</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -43,6 +55,11 @@
                             <tr>
                                 <td>{{ mark.subject.subject_name }}</td>
                                 <td>{{ mark.marks_obtained }}</td>
+                                {% if msg == "Passed" %}
+                                <td style="color: green;">Passed</td>
+                                {% else %}
+                                <td style="color: red;">Failed</td>
+                                {% endif %}
                             </tr>
                         {% endfor %}
                     </tbody>

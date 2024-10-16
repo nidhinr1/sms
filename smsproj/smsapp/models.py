@@ -88,6 +88,7 @@ class Subject(models.Model):
     subject_name = models.CharField(max_length=100)  # Name of the subject
     subject_code = models.CharField(max_length=20)  # Unique code for the subject
     semester = models.IntegerField()  # Semester number
+    course_name = models.CharField(max_length=255,null=True)
 
     def __str__(self):
         return f"{self.subject_name} ({self.subject_code})"
